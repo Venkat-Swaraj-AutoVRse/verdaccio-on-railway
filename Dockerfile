@@ -7,7 +7,7 @@ COPY config.yaml /verdaccio/conf/config.yaml
 COPY verdaccio-auth-vrse /verdaccio/plugins/verdaccio-auth-vrse
 
 # Install any dependencies the plugin needs
-# WORKDIR /verdaccio/plugins/verdaccio-auth-vrse
-# RUN npm install --production
+WORKDIR /verdaccio/plugins/verdaccio-auth-vrse
+RUN npm install --production
 
 EXPOSE 4873
