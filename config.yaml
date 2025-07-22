@@ -53,8 +53,8 @@ web:
 
 # https://verdaccio.org/docs/configuration#authentication
 auth:
-  htpasswd:
-    file: /verdaccio/storage/htpasswd
+  # htpasswd:
+    # file: /verdaccio/storage/htpasswd
     # Maximum amount of users allowed to register, defaults to "+infinity".
     # You can set this to -1 to disable registration.
     # max_users: 1000
@@ -62,6 +62,8 @@ auth:
     # algorithm: bcrypt # by default is crypt, but is recommended use bcrypt for new installations
     # Rounds number for "bcrypt", will be ignored for other algorithms.
     # rounds: 10
+  auth-vrse:
+    backendUrl: https://api.test.vrse-builder.autovrse.app/api
 
 # https://verdaccio.org/docs/configuration#uplinks
 # a list of other known repositories we can talk to
@@ -75,9 +77,9 @@ uplinks:
 packages:
   '@*/*':
     # scoped packages
-    access: $authenticated
-    publish: $authenticated
-    unpublish: $authenticated
+    access: admin
+    publish: productAdmin
+    unpublish: productAdmin
     proxy: npmjs
 
   '**':
@@ -86,12 +88,12 @@ packages:
     #
     # you can specify usernames/groupnames (depending on your auth plugin)
     # and three keywords: "$all", "$anonymous", "$authenticated"
-    access: $authenticated
+    access: admin
 
     # allow all known users to publish/publish packages
     # (anyone can register by default, remember?)
-    publish: $authenticated
-    unpublish: $authenticated
+    publish: productAdmin
+    unpublish: productAdmin
 
     # if package is not available locally, proxy requests to 'npmjs' registry
     proxy: npmjs
