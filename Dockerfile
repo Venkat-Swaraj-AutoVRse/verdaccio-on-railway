@@ -15,6 +15,4 @@ COPY config.yaml /verdaccio/conf/config.yaml
 # Copy plugin with built JS + node_modules
 COPY --from=builder /plugin/verdaccio-auth-vrse /verdaccio/plugins/verdaccio-auth-vrse
 
-VOLUME ["/verdaccio/storage/data"]
-
 EXPOSE 4873
