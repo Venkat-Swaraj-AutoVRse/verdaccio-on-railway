@@ -38,7 +38,7 @@ export default class AuthCustomPlugin implements IPluginAuth<any> {
    * Custom JWT auth middleware - called on each request with Authorization header
    */
   public apiJWTmiddleware() {
-    return async (req, res, next) => {
+    return async (req: any, res: any, next: any) => {
       const authHeader = req.headers['authorization'];
 
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -51,7 +51,10 @@ export default class AuthCustomPlugin implements IPluginAuth<any> {
       try {
         const response = await fetch(`${this.backendUrl}/auth/login/token`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         });
 
         if (!response.ok) {
@@ -63,11 +66,13 @@ export default class AuthCustomPlugin implements IPluginAuth<any> {
         const user = result.details?.user;
         const username = user?.username;
         const role = user?.role;
-        if (!username || !role) 
-        {
+        
+        if (!username || !role) {
           this.logger.warn('[auth-plugin] Invalid user object in response');
           return res.status(403).json({ error: 'Forbidden: Invalid user structure' });
         }
+
+        // Set the remote_user for Verdaccio
         req.remote_user = {
           name: username,
           groups: [role],
@@ -88,6 +93,12 @@ export default class AuthCustomPlugin implements IPluginAuth<any> {
    * Access control: determine whether user can access a package
    */
   public allow_access(user: RemoteUser, pkg: PackageAccess, cb: AuthAccessCallback): void {
+    if (!user || !user.groups) {
+      this.logger.warn('[auth-plugin] No user or groups found');
+      cb(getInternalError('Access denied'), false);
+      return;
+    }
+
     if (user.groups.includes('superAdmin') || user.groups.includes('productAdmin') || user.groups.includes('admin')) {
       this.logger.debug({ name: user.name }, `[auth-plugin] Access granted to @${user.name}`);
       cb(null, true);
@@ -101,6 +112,12 @@ export default class AuthCustomPlugin implements IPluginAuth<any> {
    * Publish control - optional
    */
   public allow_publish(user: RemoteUser, pkg: PackageAccess, cb: AuthAccessCallback): void {
+    if (!user || !user.groups) {
+      this.logger.warn('[auth-plugin] No user or groups found for publish');
+      cb(getInternalError('Not allowed to publish'), false);
+      return;
+    }
+
     if (user.groups.includes('superAdmin') || user.groups.includes('productAdmin')) {
       this.logger.debug({ name: user.name }, `[auth-plugin] Publish allowed for ${user.name}`);
       cb(null, true);
@@ -114,6 +131,12 @@ export default class AuthCustomPlugin implements IPluginAuth<any> {
    * Unpublish control - optional
    */
   public allow_unpublish(user: RemoteUser, pkg: PackageAccess, cb: AuthAccessCallback): void {
+    if (!user || !user.groups) {
+      this.logger.warn('[auth-plugin] No user or groups found for unpublish');
+      cb(getInternalError('Not allowed to unpublish'), false);
+      return;
+    }
+
     if (user.groups.includes('superAdmin') || user.groups.includes('productAdmin')) {
       this.logger.debug({ name: user.name }, `[auth-plugin] Unpublish allowed for ${user.name}`);
       cb(null, true);

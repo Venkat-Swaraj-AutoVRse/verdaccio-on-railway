@@ -62,7 +62,7 @@ auth:
     # algorithm: bcrypt # by default is crypt, but is recommended use bcrypt for new installations
     # Rounds number for "bcrypt", will be ignored for other algorithms.
     # rounds: 10
-  auth-vrse:
+  verdaccio-auth-vrse:
     backendUrl: https://api.test.vrse-builder.autovrse.app/api
 
 # https://verdaccio.org/docs/configuration#uplinks
