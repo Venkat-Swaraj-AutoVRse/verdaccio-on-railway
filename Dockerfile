@@ -12,7 +12,7 @@ FROM verdaccio/verdaccio:latest
 
 # Ensure /verdaccio/storage/data exists and is writable by verdaccio (UID 10001)
 USER root
-RUN mkdir -p /verdaccio/storage/data && chown -R 10001:10001 /verdaccio/storage
+RUN mkdir -p /verdaccio/storage && chown -R 10001:10001 /verdaccio/storage
 
 # Copy config and plugin
 COPY config.yaml /verdaccio/conf/config.yaml
