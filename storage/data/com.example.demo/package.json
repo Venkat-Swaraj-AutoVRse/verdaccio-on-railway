@@ -1,0 +1,86 @@
+{
+	"name": "com.example.demo",
+	"versions": {
+		"1.0.2": {
+			"name": "com.example.demo",
+			"version": "1.0.2",
+			"unity": "2020.3",
+			"description": "An example demo package",
+			"author": "",
+			"license": "ISC",
+			"_id": "com.example.demo@1.0.2",
+			"_nodeVersion": "22.17.1",
+			"_npmVersion": "10.9.2",
+			"dist": {
+				"integrity": "sha512-26LFKbeWPpzr/4mc7YDcA2IbuopA4MORIVTw/rNYUNVEP4lhhnXKJDJggLxbUARvHlNfwUKiaXFmn8Cs4jeJXg==",
+				"shasum": "ac72f0e3492861303527e0a79c49e06d9ec3232e",
+				"tarball": "http://localhost:4873/com.example.demo/-/com.example.demo-1.0.2.tgz"
+			},
+			"contributors": []
+		},
+		"1.0.3": {
+			"name": "com.example.demo",
+			"version": "1.0.3",
+			"unity": "2020.3",
+			"description": "An example demo package",
+			"author": "",
+			"license": "ISC",
+			"_id": "com.example.demo@1.0.3",
+			"_nodeVersion": "22.17.1",
+			"_npmVersion": "10.9.2",
+			"dist": {
+				"integrity": "sha512-LqpfhNanto+9NVE/snDFVJYmR8Iq4lI6QD5GjFhHkER+gmsihhq0lOwUw8ZbTvKXywvegddA4OKC50TI4RQBug==",
+				"shasum": "ad1a6ae262b33044cfad03702578fe3955d2943c",
+				"tarball": "http://localhost:4873/com.example.demo/-/com.example.demo-1.0.3.tgz"
+			},
+			"contributors": []
+		},
+		"1.0.4": {
+			"name": "com.example.demo",
+			"version": "1.0.4",
+			"unity": "2020.3",
+			"description": "This is a good package",
+			"author": "",
+			"license": "ISC",
+			"_id": "com.example.demo@1.0.4",
+			"_nodeVersion": "22.17.1",
+			"_npmVersion": "10.9.2",
+			"dist": {
+				"integrity": "sha512-CNps3ZhZk7eWOWse2vURTWdgPmaK9Ee8Nb732J+w0CJ3VDkDZrdQ3CR2kINT7VFXHazjhm5mKh7EJelB9AnPUA==",
+				"shasum": "7e41d592bc51031626d2518f623cfbafae59a7b8",
+				"tarball": "http://localhost:4873/com.example.demo/-/com.example.demo-1.0.4.tgz"
+			},
+			"contributors": []
+		}
+	},
+	"time": {
+		"modified": "2025-07-23T18:02:33.775Z",
+		"created": "2025-07-23T18:00:45.089Z",
+		"1.0.2": "2025-07-23T18:00:45.089Z",
+		"1.0.3": "2025-07-23T18:01:40.609Z",
+		"1.0.4": "2025-07-23T18:02:33.775Z"
+	},
+	"users": {},
+	"dist-tags": {
+		"latest": "1.0.4"
+	},
+	"_uplinks": {},
+	"_distfiles": {},
+	"_attachments": {
+		"com.example.demo-1.0.2.tgz": {
+			"shasum": "ac72f0e3492861303527e0a79c49e06d9ec3232e",
+			"version": "1.0.2"
+		},
+		"com.example.demo-1.0.3.tgz": {
+			"shasum": "ad1a6ae262b33044cfad03702578fe3955d2943c",
+			"version": "1.0.3"
+		},
+		"com.example.demo-1.0.4.tgz": {
+			"shasum": "7e41d592bc51031626d2518f623cfbafae59a7b8",
+			"version": "1.0.4"
+		}
+	},
+	"_rev": "9-963fbdee3770e382",
+	"_id": "com.example.demo",
+	"readme": "ERROR: No README data found!"
+}
