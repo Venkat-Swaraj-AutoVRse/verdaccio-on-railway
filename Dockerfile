@@ -13,9 +13,11 @@ FROM verdaccio/verdaccio:latest
 # Step 1: Switch to root to fix permissions
 USER root
 
-# Step 2: Create required storage subdirectory and fix ownership
-RUN mkdir -p /verdaccio/storage/data && chown -R 10001:10001 /verdaccio/storage
-
+# Force recreate storage directory and set correct permissions
+RUN mkdir -p /verdaccio/storage/data && \
+    chown -R 10001:10001 /verdaccio/storage && \
+    chmod -R 775 /verdaccio/storage
+    
 # Step 3: Copy config and plugin
 COPY config.yaml /verdaccio/conf/config.yaml
 COPY --from=builder /plugin/verdaccio-auth-vrse /verdaccio/plugins/verdaccio-auth-vrse
