@@ -13,7 +13,7 @@
 # https://verdaccio.org/docs/best
 
 # path to a directory with all packages
-storage: /verdaccio/storage
+storage: /verdaccio/storage/data
 # path to a directory with plugins to include
 plugins: /verdaccio/plugins
 
