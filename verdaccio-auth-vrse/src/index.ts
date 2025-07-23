@@ -88,7 +88,7 @@ export default class AuthCustomPlugin implements IPluginAuth<any> {
    * Access control: determine whether user can access a package
    */
   public allow_access(user: RemoteUser, pkg: PackageAccess, cb: AuthAccessCallback): void {
-    if (user.groups.includes('admin')) {
+    if (user.groups.includes('superAdmin') || user.groups.includes('productAdmin') || user.groups.includes('admin')) {
       this.logger.debug({ name: user.name }, `[auth-plugin] Access granted to @${user.name}`);
       cb(null, true);
     } else {
