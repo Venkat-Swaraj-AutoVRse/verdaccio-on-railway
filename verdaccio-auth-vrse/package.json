@@ -1,7 +1,7 @@
 {
   "name": "verdaccio-auth-vrse",
-  "version": "0.0.2",
-  "description": "Plugin to integrate with existing backend",
+  "version": "0.0.3",
+  "description": "Plugin to integrate with pulse backend",
   "main": "lib/src/index.js",
   "types": "lib/src/index.d.ts",
   "engines": {

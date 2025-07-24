@@ -77,23 +77,28 @@ uplinks:
 packages:
   '@*/*':
     # scoped packages
-    access: admin
-    publish: productAdmin
-    unpublish: productAdmin
+    access: "admin productAdmin superAdmin"
+    publish: "productAdmin superAdmin"
+    unpublish: "productAdmin superAdmin"
     proxy: npmjs
+  
+  # to add restriction for packages name matching 
+  # 'com.AutoVrse.*':
+  #   access: "admin"
+  #   publish: "superAdmin productAdmin"
+  #   unpublish: "superAdmin productAdmin"
+  #   proxy: npmjs
 
   '**':
     # allow all users (including non-authenticated users) to read and
     # publish all packages
     #
-    # you can specify usernames/groupnames (depending on your auth plugin)
+    # you can specify usernames/groupnames (admin productAdmin superAdmin)
     # and three keywords: "$all", "$anonymous", "$authenticated"
-    access: admin
+    access: "admin productAdmin superAdmin"
 
-    # allow all known users to publish/publish packages
-    # (anyone can register by default, remember?)
-    publish: productAdmin
-    unpublish: productAdmin
+    publish: "productAdmin superAdmin"
+    unpublish: "productAdmin superAdmin"
 
     # if package is not available locally, proxy requests to 'npmjs' registry
     proxy: npmjs

@@ -142,65 +142,79 @@ export default class AuthCustomPlugin implements IPluginAuth<AuthPluginConfig> {
   }
 
   /**
+   * A generic helper to check permissions against the package config.
+   */
+  private hasPermission(
+  user: RemoteUser,
+  pkg: AllowAccess & PackageAccess,
+  permission: 'access' | 'publish' | 'unpublish',
+  cb: AuthAccessCallback
+  ): void {
+    const requiredGroupsConfig = pkg[permission];
+    let requiredGroups: string[] = [];
+
+    // Check the type of the configuration value
+    if (Array.isArray(requiredGroupsConfig)) {
+      requiredGroups = requiredGroupsConfig;
+    } 
+    else {
+      this.logger.warn(`[auth-plugin] Denied "${permission}" for user "${user.name}" for package "${pkg.name}" due to missing configuration in config.yaml.`);
+      return cb(getForbidden(`Permissions for this package are not configured correctly in config.yaml.`), false);
+    }
+
+    // If requiredGroups is still empty, the config is missing or invalid
+    if (requiredGroups.length === 0) {
+      this.logger.warn(
+        `[auth-plugin] Denied "${permission}" to user "${user.name}" for package "${pkg.name}" due to missing or invalid configuration.`
+      );
+      return cb(getForbidden(`Permissions for this package are not configured correctly.`), false);
+    }
+
+    if (user.groups.some(group => requiredGroups.includes(group))) {
+      this.logger.debug(`[auth-plugin] Granted "${permission}" to user "${user.name}" for package "${pkg.name}".`);
+      cb(null, true);
+    } else {
+      this.logger.warn(`[auth-plugin] Denied "${permission}" to user "${user.name}" for package "${pkg.name}".`);
+      cb(getForbidden(`You do not have the required permissions to ${permission} this package.`), false);
+    }
+  }
+
+  /**
    * Controls package access based on user roles (groups).
    * The method signature is updated to be compatible with the overloaded definition in the base interface.
    */
   public allow_access(user: RemoteUser, pkg: (AllowAccess & PackageAccess) | (AuthPluginConfig & PackageAccess), cb: AuthAccessCallback): void {
     // This plugin's logic is based on package access, so we must have a package name.
-    // This type guard also satisfies the compiler for the overloaded method signature.
-    if (!('name' in pkg)) {
+    if (!('name' in pkg) || !('access' in pkg)) {
         this.logger.warn(`[auth-plugin] Denying access for user "${user.name}" for a non-package-specific request.`);
         // Deny access if it's a general check not related to a specific package.
         return cb(getForbidden('This plugin only handles package-specific permissions.'), false);
     }
 
-    const requiredGroups = ['superAdmin', 'productAdmin', 'admin'];
-    // Check if the user's groups array has any of the required groups
-    if (user.groups.some(group => requiredGroups.includes(group))) {
-      this.logger.debug(`[auth-plugin] Granted "access" to user "${user.name}" for package "${pkg.name}".`);
-      cb(null, true);
-    } else {
-      this.logger.warn(`[auth-plugin] Denied "access" to user "${user.name}" for package "${pkg.name}".`);
-      // Use getForbidden for authorization errors
-      cb(getForbidden(`You do not have the required permissions to access this package.`), false);
-    }
+    this.hasPermission(user, pkg, 'access', cb);
   }
 
   /**
    * Controls package publishing based on user roles (groups).
    */
   public allow_publish(user: RemoteUser, pkg: (AllowAccess & PackageAccess) | (AuthPluginConfig & PackageAccess), cb: AuthAccessCallback): void {
-    if (!('name' in pkg)) {
+    if (!('name' in pkg) || !('publish' in pkg)) {
         this.logger.warn(`[auth-plugin] Denying publish for user "${user.name}" for a non-package-specific request.`);
         return cb(getForbidden('This plugin only handles package-specific permissions.'), false);
     }
       
-    const requiredGroups = ['superAdmin', 'productAdmin'];
-    if (user.groups.some(group => requiredGroups.includes(group))) {
-      this.logger.debug(`[auth-plugin] Granted "publish" to user "${user.name}" for package "${pkg.name}".`);
-      cb(null, true);
-    } else {
-      this.logger.warn(`[auth-plugin] Denied "publish" to user "${user.name}" for package "${pkg.name}".`);
-      cb(getForbidden('You do not have the required permissions to publish this package.'), false);
-    }
+    this.hasPermission(user, pkg, 'publish', cb);
   }
 
   /**
    * Controls package unpublishing based on user roles (groups).
    */
   public allow_unpublish(user: RemoteUser, pkg: (AllowAccess & PackageAccess) | (AuthPluginConfig & PackageAccess), cb: AuthAccessCallback): void {
-    if (!('name' in pkg)) {
+    if (!('name' in pkg) || !('unpublish' in pkg)) {
         this.logger.warn(`[auth-plugin] Denying unpublish for user "${user.name}" for a non-package-specific request.`);
         return cb(getForbidden('This plugin only handles package-specific permissions.'), false);
     }
       
-    const requiredGroups = ['superAdmin', 'productAdmin'];
-    if (user.groups.some(group => requiredGroups.includes(group))) {
-      this.logger.debug(`[auth-plugin] Granted "unpublish" to user "${user.name}" for package "${pkg.name}".`);
-      cb(null, true);
-    } else {
-      this.logger.warn(`[auth-plugin] Denied "unpublish" to user "${user.name}" for package "${pkg.name}".`);
-      cb(getForbidden('You do not have the required permissions to unpublish this package.'), false);
-    }
+    this.hasPermission(user, pkg, 'unpublish', cb);
   }
 }
