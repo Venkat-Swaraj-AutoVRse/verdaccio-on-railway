@@ -95,8 +95,12 @@ export default class AuthCustomPlugin implements IPluginAuth<AuthPluginConfig> {
     };
 
     const authHeader = req.headers['authorization'];
+    // If there's no auth header, treat the user as anonymous
+    if (!authHeader) {
+      return next(); 
+    }
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader.startsWith('Bearer ')) {
       this.logger.warn('[auth-plugin] Request is missing a Bearer token.');
       // Pass a 401 Unauthorized error to the next middleware
       return next(createError(401, 'A Bearer token is required for authentication.'));
@@ -189,6 +193,19 @@ export default class AuthCustomPlugin implements IPluginAuth<AuthPluginConfig> {
         this.logger.warn(`[auth-plugin] Denying access for user "${user.name}" for a non-package-specific request.`);
         // Deny access if it's a general check not related to a specific package.
         return cb(getForbidden('This plugin only handles package-specific permissions.'), false);
+    }
+
+    const requiredAccess = pkg.access || [];
+
+    // Handle anonymous users
+    if (!user) {
+      if (requiredAccess.includes('all') || requiredAccess.includes('anonymous')) {
+        this.logger.debug(`[auth-plugin] Granted anonymous access to package "${pkg.name}".`);
+        return cb(null, true);
+      } else {
+        this.logger.warn(`[auth-plugin] Denied anonymous access to package "${pkg.name}".`);
+        return cb(getForbidden('You must be logged in to access this package.'), false);
+      }
     }
 
     this.hasPermission(user, pkg, 'access', cb);

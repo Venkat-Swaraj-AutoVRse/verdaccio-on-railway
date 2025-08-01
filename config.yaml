@@ -82,6 +82,13 @@ packages:
     unpublish: "productAdmin superAdmin"
     proxy: npmjs
   
+  # For unrestricted package set access for the particular package to all or anonymous
+  # 'com.example.demo':
+  #   access: "all"
+  #   publish: "superAdmin productAdmin"
+  #   unpublish: "superAdmin productAdmin"
+  #   proxy: npmjs
+
   # to add restriction for packages name matching 
   # 'com.AutoVrse.*':
   #   access: "admin"
@@ -180,11 +187,55 @@ max_body_size: 100mb
 
 # https://verdaccio.org/docs/configuration#notifications
 # In your config.yaml
-notify:
-  method: POST
-  headers: [{ "Content-Type": "application/json" }]
-  endpoint: https://prod-08.centralindia.logic.azure.com:443/workflows/4699a5e29825471093e079bf2810d53c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=iqbnRCKaQcnumy5xStunUWi9T1mMbZ6KgV7a_zgR4Lg
-  content: '{"@type": "MessageCard", "themeColor": "148324", "summary": "New package: {{ name }}", "sections": [{"activityTitle": "🚀 New package published!", "activitySubtitle": "**{{ name }}@{{ version }}**", "facts": [{"name": "Link", "value": "[View Package]({{ package_url }})"}], "markdown": true}]}'
+# notify:
+#   method: POST
+#   headers: [{ "Content-Type": "application/json" }]
+#   endpoint: addtheendpointhere
+#   content: |
+#     {
+#       "type": "message",
+#       "attachments": [
+#         {
+#           "contentType": "application/vnd.microsoft.card.adaptive",
+#           "content": {
+#             "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+#             "type": "AdaptiveCard",
+#             "version": "1.5",
+#             "body": [
+#               {
+#                 "type": "TextBlock",
+#                 "text": "🚀 New Package Published!",
+#                 "weight": "Bolder",
+#                 "size": "Large"
+#               },
+#               {
+#                 "type": "TextBlock",
+#                 "text": "**{{ publisher.name }}** has published **{{ publishedPackage }}**.",
+#                 "wrap": true,
+#                 "size": "Medium"
+#               },
+#               {
+#                 "type": "FactSet",
+#                 "facts": [
+#                   {
+#                     "title": "Package:",
+#                     "value": "{{ name }}"
+#                   },
+#                   {
+#                     "title": "Version:",
+#                     "value": "{{ version }}"
+#                   },
+#                   {
+#                     "title": "Published By:",
+#                     "value": "{{ publisher.name }}"
+#                   }
+#                 ]
+#               }
+#             ]
+#           }
+#         }
+#       ]
+#     }
 
 middlewares:
   audit:
