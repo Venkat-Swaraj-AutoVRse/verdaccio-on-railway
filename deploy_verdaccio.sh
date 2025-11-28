@@ -4,8 +4,10 @@
 set -e
 
 echo "--- Installing nvm and Node.js 18 ---"
-# Update package manager (assuming Amazon Linux 2)
-sudo yum update -y
+# Update package manager (assuming Ubuntu 24.04)
+sudo apt update -y
+sudo apt upgrade -y
+sudo apt install -y curl
 
 # Install nvm (Node Version Manager)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
