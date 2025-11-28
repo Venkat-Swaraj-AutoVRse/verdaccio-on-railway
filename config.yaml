@@ -174,7 +174,7 @@ max_body_size: 100mb
 # - "[::1]:4873"                # ipv6
 # - unix:/tmp/verdaccio.sock    # unix socket
 listen:
-  - 0.0.0.0:4873
+  - 0.0.0.0:80
 
 # The HTTPS configuration is useful if you do not consider use a HTTP Proxy
 # https://verdaccio.org/docs/configuration#https
