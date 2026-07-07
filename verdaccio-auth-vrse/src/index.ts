@@ -97,6 +97,7 @@ export default class AuthCustomPlugin implements IPluginAuth<AuthPluginConfig> {
     const authHeader = req.headers['authorization'];
     // If there's no auth header, treat the user as anonymous
     if (!authHeader) {
+      req.remote_user = this.createRemoteUser('anonymous', ['$all', '$anonymous']);
       return next(); 
     }
 
