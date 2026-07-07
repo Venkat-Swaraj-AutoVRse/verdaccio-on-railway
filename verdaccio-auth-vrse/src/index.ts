@@ -9,7 +9,7 @@ import {
   AllowAccess,
   AuthError,
 } from '@verdaccio/types';
-import { getForbidden, getInternalError } from '@verdaccio/commons-api';
+import { getForbidden } from '@verdaccio/commons-api';
 import fetch from 'node-fetch';
 import createError, { HttpError } from 'http-errors';
 import { Request, Response, NextFunction } from 'express';
@@ -148,64 +148,75 @@ export default class AuthCustomPlugin implements IPluginAuth<AuthPluginConfig> {
   /**
    * A generic helper to check permissions against the package config.
    */
-  private hasPermission(
-  user: RemoteUser,
-  pkg: AllowAccess & PackageAccess,
-  permission: 'access' | 'publish' | 'unpublish',
-  cb: AuthAccessCallback
-  ): void {
-    const requiredGroupsConfig = pkg[permission];
-    let requiredGroups: string[] = [];
-
-    // Check the type of the configuration value
+  private normalizePermissionConfig(requiredGroupsConfig: string[] | string | undefined): string[] {
     if (Array.isArray(requiredGroupsConfig)) {
-      requiredGroups = requiredGroupsConfig;
-    } 
-    else {
-      this.logger.warn(`[auth-plugin] Denied "${permission}" for user "${user.name}" for package "${pkg.name}" due to missing configuration in config.yaml.`);
-      return cb(getForbidden(`Permissions for this package are not configured correctly in config.yaml.`), false);
+      return requiredGroupsConfig;
     }
 
-    // If requiredGroups is still empty, the config is missing or invalid
+    if (typeof requiredGroupsConfig === 'string') {
+      return requiredGroupsConfig.split(/\s+/).filter(Boolean);
+    }
+
+    return [];
+  }
+
+  private hasPermission(
+    user: RemoteUser | null | undefined,
+    pkg: AllowAccess & PackageAccess,
+    permission: 'access' | 'publish' | 'unpublish',
+    cb: AuthAccessCallback
+  ): void {
+    const requiredGroups = this.normalizePermissionConfig(pkg[permission]);
+    const userName = user?.name || 'anonymous';
+    const pkgName = pkg.name || '<unknown>';
+
     if (requiredGroups.length === 0) {
       this.logger.warn(
-        `[auth-plugin] Denied "${permission}" to user "${user.name}" for package "${pkg.name}" due to missing or invalid configuration.`
+        `[auth-plugin] Denied "${permission}" for user "${userName}" for package "${pkgName}" due to missing configuration in config.yaml.`
       );
-      return cb(getForbidden(`Permissions for this package are not configured correctly.`), false);
+      return cb(getForbidden(`Permissions for this package are not configured correctly in config.yaml.`), false);
     }
 
-    if (user.groups.some(group => requiredGroups.includes(group))) {
-      this.logger.debug(`[auth-plugin] Granted "${permission}" to user "${user.name}" for package "${pkg.name}".`);
-      cb(null, true);
-    } else {
-      this.logger.warn(`[auth-plugin] Denied "${permission}" to user "${user.name}" for package "${pkg.name}".`);
-      cb(getForbidden(`You do not have the required permissions to ${permission} this package.`), false);
+    if (requiredGroups.includes('$all') || requiredGroups.includes('all')) {
+      this.logger.debug(`[auth-plugin] Granted "${permission}" to user "${userName}" for package "${pkgName}" via public access.`);
+      return cb(null, true);
     }
+
+    if (!user) {
+      if (permission === 'access' && (requiredGroups.includes('$anonymous') || requiredGroups.includes('anonymous'))) {
+        this.logger.debug(`[auth-plugin] Granted anonymous access to package "${pkgName}".`);
+        return cb(null, true);
+      }
+
+      this.logger.warn(`[auth-plugin] Denied "${permission}" to anonymous user for package "${pkgName}".`);
+      return cb(getForbidden('You must be logged in to perform this action.'), false);
+    }
+
+    if (requiredGroups.includes('$authenticated')) {
+      this.logger.debug(`[auth-plugin] Granted "${permission}" to authenticated user "${user.name}" for package "${pkgName}".`);
+      return cb(null, true);
+    }
+
+    if ((user.groups || []).some(group => requiredGroups.includes(group))) {
+      this.logger.debug(`[auth-plugin] Granted "${permission}" to user "${user.name}" for package "${pkgName}".`);
+      return cb(null, true);
+    }
+
+    this.logger.warn(`[auth-plugin] Denied "${permission}" to user "${user.name}" for package "${pkgName}".`);
+    return cb(getForbidden(`You do not have the required permissions to ${permission} this package.`), false);
   }
 
   /**
    * Controls package access based on user roles (groups).
    * The method signature is updated to be compatible with the overloaded definition in the base interface.
    */
-  public allow_access(user: RemoteUser, pkg: (AllowAccess & PackageAccess) | (AuthPluginConfig & PackageAccess), cb: AuthAccessCallback): void {
+  public allow_access(user: RemoteUser | null | undefined, pkg: (AllowAccess & PackageAccess) | (AuthPluginConfig & PackageAccess) | undefined, cb: AuthAccessCallback): void {
     // This plugin's logic is based on package access, so we must have a package name.
-    if (!('name' in pkg) || !('access' in pkg)) {
-        this.logger.warn(`[auth-plugin] Denying access for user "${user.name}" for a non-package-specific request.`);
+    if (!pkg || !('name' in pkg) || !('access' in pkg)) {
+        const userName = user?.name || 'anonymous';
+        this.logger.warn(`[auth-plugin] Denying access for user "${userName}" for a non-package-specific request.`);
         // Deny access if it's a general check not related to a specific package.
         return cb(getForbidden('This plugin only handles package-specific permissions.'), false);
-    }
-
-    const requiredAccess = pkg.access || [];
-
-    // Handle anonymous users
-    if (!user) {
-      if (requiredAccess.includes('all') || requiredAccess.includes('anonymous')) {
-        this.logger.debug(`[auth-plugin] Granted anonymous access to package "${pkg.name}".`);
-        return cb(null, true);
-      } else {
-        this.logger.warn(`[auth-plugin] Denied anonymous access to package "${pkg.name}".`);
-        return cb(getForbidden('You must be logged in to access this package.'), false);
-      }
     }
 
     this.hasPermission(user, pkg, 'access', cb);
@@ -214,9 +225,10 @@ export default class AuthCustomPlugin implements IPluginAuth<AuthPluginConfig> {
   /**
    * Controls package publishing based on user roles (groups).
    */
-  public allow_publish(user: RemoteUser, pkg: (AllowAccess & PackageAccess) | (AuthPluginConfig & PackageAccess), cb: AuthAccessCallback): void {
-    if (!('name' in pkg) || !('publish' in pkg)) {
-        this.logger.warn(`[auth-plugin] Denying publish for user "${user.name}" for a non-package-specific request.`);
+  public allow_publish(user: RemoteUser | null | undefined, pkg: (AllowAccess & PackageAccess) | (AuthPluginConfig & PackageAccess) | undefined, cb: AuthAccessCallback): void {
+    if (!pkg || !('name' in pkg) || !('publish' in pkg)) {
+        const userName = user?.name || 'anonymous';
+        this.logger.warn(`[auth-plugin] Denying publish for user "${userName}" for a non-package-specific request.`);
         return cb(getForbidden('This plugin only handles package-specific permissions.'), false);
     }
       
@@ -226,9 +238,10 @@ export default class AuthCustomPlugin implements IPluginAuth<AuthPluginConfig> {
   /**
    * Controls package unpublishing based on user roles (groups).
    */
-  public allow_unpublish(user: RemoteUser, pkg: (AllowAccess & PackageAccess) | (AuthPluginConfig & PackageAccess), cb: AuthAccessCallback): void {
-    if (!('name' in pkg) || !('unpublish' in pkg)) {
-        this.logger.warn(`[auth-plugin] Denying unpublish for user "${user.name}" for a non-package-specific request.`);
+  public allow_unpublish(user: RemoteUser | null | undefined, pkg: (AllowAccess & PackageAccess) | (AuthPluginConfig & PackageAccess) | undefined, cb: AuthAccessCallback): void {
+    if (!pkg || !('name' in pkg) || !('unpublish' in pkg)) {
+        const userName = user?.name || 'anonymous';
+        this.logger.warn(`[auth-plugin] Denying unpublish for user "${userName}" for a non-package-specific request.`);
         return cb(getForbidden('This plugin only handles package-specific permissions.'), false);
     }
       

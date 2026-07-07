@@ -162,7 +162,7 @@ packages:
 
     # scoped packages
 
-    access: "all"
+    access: $all
 
     publish: "admin productAdmin superAdmin"
 
@@ -194,7 +194,7 @@ packages:
 
   'com.autovrse.scenemesthri':
 
-    access: "all"
+    access: $all
 
     publish: "admin productAdmin superAdmin"
 
@@ -202,7 +202,7 @@ packages:
 
   'com.autovrse.infinityworkshop':
 
-    access: "all"
+    access: $all
 
     publish: "admin productAdmin superAdmin"
 
@@ -210,7 +210,7 @@ packages:
 
   'com.autovrse.vrsebuilder.unity-mcp':
 
-    access: "all"
+    access: $all
 
     publish: "admin productAdmin superAdmin"
 
@@ -218,7 +218,7 @@ packages:
 
   'unity-mcp-server':
 
-    access: "all"
+    access: $all
 
     publish: "admin productAdmin superAdmin"
 
@@ -236,7 +236,7 @@ packages:
 
   'vrsebuilder-skills':
 
-    access: "all"
+    access: $all
 
     publish: "admin productAdmin superAdmin"
 
@@ -278,7 +278,7 @@ packages:
 
     # and three keywords: "$all", "$anonymous", "$authenticated"
 
-    access: "all"
+    access: $all
 
 
 
